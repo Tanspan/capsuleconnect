@@ -1,0 +1,79 @@
+{% extends 'base.html' %}{% block title %}— Chat{% endblock %}
+{% block content %}
+<div class="chat-wrap">
+  <aside class="chat-side">
+    <div class="p-3" style="border-bottom:1px solid #2a2a32;"><h6 class="serif mb-2">Messages</h6>
+      <input type="text" class="form-control form-control-sm" placeholder="Search…" oninput="$('.uitem').each(function(){ $(this).toggle($(this).data('name').toLowerCase().includes(this.value.toLowerCase())); }.bind(this))">
+    </div>
+    <div style="overflow-y:auto;flex:1;">
+      {% if users %}{% for u in users %}
+      <a href="{{ url_for('chat_with',oid=u.id) }}" class="uitem {% if other is defined and other and other.id==u.id %}on{% endif %}" data-name="{{ u.username }}">
+        <div class="av" style="width:32px;height:32px;font-size:.75rem;">{{ u.username[0].upper() }}</div>
+        <div><div class="fw-semibold" style="font-size:.82rem;">@{{ u.username }}</div><div style="font-size:.7rem;color:var(--muted);">Connected</div></div>
+      </a>
+      {% endfor %}
+      {% else %}<div class="p-4 text-center" style="color:var(--muted);font-size:.82rem;">No connections yet.<br><a href="{{ url_for('search') }}" style="color:var(--gold);font-weight:600;">Find people</a></div>{% endif %}
+    </div>
+  </aside>
+
+  <div class="chat-main">
+    {% if other is defined and other %}
+    <div class="d-flex align-items-center gap-2 px-4 py-3" style="background:#141416;border-bottom:1px solid #2a2a32;flex-shrink:0;">
+      <div class="av" style="width:32px;height:32px;font-size:.75rem;">{{ other.username[0].upper() }}</div>
+      <div><div class="serif fw-semibold" style="font-size:.95rem;">@{{ other.username }}</div>
+      <div style="font-size:.7rem;color:var(--muted);"><a href="{{ url_for('profile',uname=other.username) }}" style="color:var(--muted);">View profile</a></div></div>
+    </div>
+
+    <div class="msg-area" id="marea">
+      {% if msgs %}{% for m in msgs %}{% set mine=m.sender_id==session.uid %}{% set dt=m.scheduled_at.strftime('%I:%M %p') if m.scheduled_at else m.sent_at.strftime('%I:%M %p') %}
+      <div><div class="tlbl {{ 'r' if mine else '' }}">{{ dt }}{% if mine and m.scheduled_at %} <span style="font-size:.62rem;color:var(--gold);margin-left:3px;">scheduled</span>{% endif %}</div>
+      <div class="msg-row {{ 'mine' if mine else '' }}">
+        {% if not mine %}<div class="av" style="width:24px;height:24px;font-size:.6rem;">{{ other.username[0].upper() }}</div>{% endif %}
+        <div>{% if m.image_url %}<img src="{{ m.image_url }}" style="max-width:200px;border-radius:8px;display:block;cursor:pointer;margin-bottom:4px;" onclick="openLB(this.src)" alt="image">{% endif %}
+        {% if m.content %}<div class="bubble">{{ m.content }}</div>{% endif %}</div>
+      </div></div>
+      {% endfor %}
+      {% else %}<div style="margin:auto;text-align:center;color:var(--muted);font-size:.85rem;">Start a conversation with @{{ other.username }}</div>{% endif %}
+    </div>
+
+    {% if sched %}
+    <div style="padding:0 20px 10px;flex-shrink:0;border-top:1px dashed #2a2a32;">
+      <div class="pt-2 mb-2" style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:var(--muted);">Pending scheduled</div>
+      {% for s in sched %}
+      <div><div class="tlbl r">{{ s.scheduled_at.strftime('%I:%M %p') }} <span style="font-size:.62rem;color:var(--gold);margin-left:3px;">scheduled</span></div>
+      <div class="msg-row mine"><div>{% if s.content %}<div class="bubble pending">{{ s.content }}</div>{% endif %}</div></div></div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div style="border-top:1px solid #2a2a32;background:#141416;flex-shrink:0;">
+      <div class="d-flex gap-2 px-3 pt-2">
+        <button class="opt-btn" id="scbtn"><i class="far fa-clock me-1"></i>Schedule</button>
+        <button class="opt-btn" id="imgbtn"><i class="far fa-image me-1"></i>Image</button>
+        <input type="file" id="fimg" accept="image/*" style="display:none;">
+      </div>
+      <div id="scpick" style="display:none;padding:6px 12px 2px;">
+        <input type="datetime-local" id="scin" class="form-control form-control-sm">
+        <div style="font-size:.7rem;color:var(--muted);margin-top:4px;">Delivers at scheduled time</div>
+      </div>
+      <div id="iprev" style="display:none;padding:6px 12px 2px;align-items:center;gap:8px;">
+        <img id="ithumb" src="" alt="" style="height:44px;border-radius:7px;">
+        <button id="rimg" style="background:rgba(224,112,112,.12);color:var(--locked);border:1px solid rgba(224,112,112,.25);border-radius:5px;padding:2px 9px;font-size:.72rem;cursor:pointer;">Remove</button>
+      </div>
+      <div class="d-flex gap-2 align-items-end p-3">
+        <textarea id="minput" class="form-control" rows="1" placeholder="Write a message…" style="resize:none;max-height:110px;min-height:40px;"></textarea>
+        <button id="sbtn" class="send-btn"><i class="fas fa-paper-plane" style="font-size:.82rem;"></i></button>
+      </div>
+    </div>
+
+    {% else %}
+    <div class="d-flex flex-column align-items-center justify-content-center h-100 text-center p-4" style="color:var(--muted);">
+      <i class="fas fa-comments fa-2x mb-3"></i><h5 class="serif mb-2">Select a conversation</h5>
+      <p style="font-size:.85rem;">Choose someone from the left to start chatting</p>
+      {% if not users %}<a href="{{ url_for('search') }}" class="btn btn-gold mt-3">Find People</a>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block js %}<script>window.OID={{ other.id if other is defined and other else 'null' }};</script>{% endblock %}

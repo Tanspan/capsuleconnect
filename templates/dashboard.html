@@ -1,0 +1,78 @@
+{% extends 'base.html' %}{% block title %}— Dashboard{% endblock %}
+{% block content %}
+<section class="container py-5">
+  <div class="d-flex justify-content-between align-items-end pb-4 mb-4" style="border-bottom:1px solid #2a2a32;">
+    <div><h2 class="serif mb-1">Dashboard</h2><p class="mb-0" style="color:var(--muted);font-size:.85rem;">Your time capsule collection</p></div>
+    <a href="{{ url_for('create') }}" class="btn btn-gold">+ New Capsule</a>
+  </div>
+
+  {% set total=caps|length %}{% set ln=caps|selectattr('unlock_date','gt',now)|list|length %}
+  <div class="row g-3 mb-4">
+    {% for v,l in [(total,'Total'),(ln,'Locked'),(total-ln,'Unlocked'),(recv|length,'Received')] %}
+    <div class="col-6 col-md-3"><div class="card p-3 text-center"><div class="serif fw-bold mb-1" style="font-size:1.7rem;color:var(--gold);">{{ v }}</div><div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:600;">{{ l }}</div></div></div>
+    {% endfor %}
+  </div>
+
+  <div class="d-flex mb-4" style="border-bottom:1px solid #2a2a32;">
+    <button class="tab-btn active" data-t="my">My Capsules ({{ total }})</button>
+    <button class="tab-btn" data-t="recv">Received ({{ recv|length }})</button>
+  </div>
+
+  <div id="t-my" class="tab-pane" style="display:block;">
+    {% if caps %}
+    {% set pn=caps|selectattr('is_public','equalto',0)|selectattr('recipient_id','none')|list|length %}
+    {% set pub=caps|selectattr('is_public','equalto',1)|list|length %}
+    {% set prv=caps|selectattr('recipient_id','ne',none)|list|length %}
+    <div class="d-flex flex-wrap gap-2 mb-4">
+      <button class="filter-pill active" data-cat="all">All · {{ total }}</button>
+      <button class="filter-pill" data-cat="personal">Personal · {{ pn }}</button>
+      <button class="filter-pill" data-cat="public">Public · {{ pub }}</button>
+      <button class="filter-pill" data-cat="private">Sent · {{ prv }}</button>
+    </div>
+    <div class="row g-3">
+      {% for cap in caps %}{% set ul=cap.unlock_date<=now %}{% if cap.recipient_id %}{% set cat='private' %}{% elif cap.is_public %}{% set cat='public' %}{% else %}{% set cat='personal' %}{% endif %}
+      <div class="col-md-4 cap-col" data-cat="{{ cat }}">
+        <div class="card h-100 p-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            {% if cat=='public' %}<span style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:var(--unlock);">Public</span>
+            {% elif cat=='private' %}<span style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:var(--gold);">Sent</span>
+            {% else %}<span style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:var(--muted);">Personal</span>{% endif %}
+            <div class="d-flex align-items-center gap-1"><span class="dot dot-{{ cap.type }}"></span><span style="font-size:.68rem;color:var(--muted);font-weight:600;text-transform:uppercase;">{{ cap.type }}</span></div>
+          </div>
+          <h6 class="serif mb-2">{{ cap.title }}</h6>
+          <p class="mb-3 flex-grow-1 {{ '' if ul else 'blur' }}" style="font-size:.82rem;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ cap.message[:130] }}</p>
+          <div class="d-flex justify-content-between align-items-end pt-2" style="border-top:1px solid #2a2a32;">
+            <div>{% if ul %}<span class="badge-unlocked d-block mb-1"><i class="fas fa-lock-open fa-xs me-1"></i>Unlocked</span>
+            {% else %}<span class="badge-locked d-block mb-1"><i class="fas fa-lock fa-xs me-1"></i>Locked</span><div style="font-size:.72rem;font-weight:600;color:var(--locked);" data-unlock="{{ cap.unlock_date.isoformat() }}">—</div>{% endif %}
+            <div style="font-size:.7rem;color:var(--muted);">{{ cap.unlock_date.strftime('%b %d, %Y · %I:%M %p') }}</div></div>
+            {% if ul %}<a href="{{ url_for('view',cid=cap.id) }}" style="font-size:.76rem;font-weight:700;color:var(--gold);">Open →</a>{% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}<div class="text-center py-5" style="color:var(--muted);"><i class="fas fa-box-open fa-2x mb-3 d-block"></i><h5 class="serif">No capsules yet</h5><a href="{{ url_for('create') }}" class="btn btn-gold mt-3">Create one</a></div>{% endif %}
+  </div>
+
+  <div id="t-recv" class="tab-pane" style="display:none;">
+    {% if recv %}
+    <div class="row g-3">
+      {% for cap in recv %}{% set ul=cap.unlock_date<=now %}
+      <div class="col-md-4"><div class="card h-100 p-3">
+        <div class="d-flex align-items-center gap-2 mb-2"><div class="av" style="width:20px;height:20px;font-size:.58rem;">{{ cap.sname[0].upper() }}</div><span style="font-size:.75rem;color:var(--muted);">From @{{ cap.sname }}</span></div>
+        <h6 class="serif mb-2">{{ cap.title }}</h6>
+        <p class="mb-3 blur flex-grow-1" style="font-size:.82rem;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ cap.message[:130] }}</p>
+        <div class="d-flex justify-content-between align-items-end pt-2" style="border-top:1px solid #2a2a32;">
+          <div>{% if ul %}<span class="badge-unlocked d-block mb-1"><i class="fas fa-lock-open fa-xs me-1"></i>Unlocked</span>
+          {% else %}<span class="badge-locked d-block mb-1"><i class="fas fa-lock fa-xs me-1"></i>Locked</span><div style="font-size:.72rem;font-weight:600;color:var(--locked);" data-unlock="{{ cap.unlock_date.isoformat() }}">—</div>{% endif %}
+          <div style="font-size:.7rem;color:var(--muted);">{{ cap.unlock_date.strftime('%b %d, %Y · %I:%M %p') }}</div></div>
+          {% if ul %}<a href="{{ url_for('view',cid=cap.id) }}" style="font-size:.76rem;font-weight:700;color:var(--gold);">Open →</a>{% endif %}
+        </div>
+      </div></div>
+      {% endfor %}
+    </div>
+    {% else %}<div class="text-center py-5" style="color:var(--muted);"><i class="fas fa-inbox fa-2x mb-3 d-block"></i><h5 class="serif">Nothing received yet</h5></div>{% endif %}
+  </div>
+
+</section>
+{% endblock %}

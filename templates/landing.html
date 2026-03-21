@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CapsuleConnect</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Mulish:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}">
+</head>
+<body>
+<div class="grid-bg"></div>
+<header>
+  <nav class="navbar py-3" style="position:relative;z-index:10;border-bottom:1px solid rgba(42,42,50,.6);">
+    <div class="container d-flex justify-content-between align-items-center">
+      <span class="navbar-brand serif">CapsuleConnect</span>
+      <div class="d-flex gap-2">
+        <a href="{{ url_for('login') }}" class="btn btn-outline-secondary px-4">Login</a>
+        <a href="{{ url_for('register') }}" class="btn btn-gold px-4">Get Started</a>
+      </div>
+    </div>
+  </nav>
+</header>
+<main>
+  <section class="py-5" style="position:relative;z-index:5;min-height:85vh;display:flex;align-items:center;">
+    <div class="container py-5">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-6">
+          <span class="badge px-3 py-2 mb-3 d-inline-block" style="background:rgba(200,169,110,.12);color:var(--gold);border:1px solid rgba(200,169,110,.3);font-size:.72rem;letter-spacing:1px;">DIGITAL TIME CAPSULE PLATFORM</span>
+          <h1 class="serif display-4 fw-bold mb-4" style="letter-spacing:-1px;">Lock memories.<br>Unlock them <span style="color:var(--gold);">in time.</span></h1>
+          <p class="mb-4" style="color:var(--muted);font-size:1rem;line-height:1.75;max-width:460px;">Write letters to your future self, store memories, set goals — sealed until the moment you choose.</p>
+          <div class="d-flex gap-3">
+            <a href="{{ url_for('register') }}" class="btn btn-gold btn-lg px-4">Create Your First Capsule</a>
+            <a href="{{ url_for('login') }}" class="btn btn-outline-secondary btn-lg px-4">Sign In</a>
+          </div>
+        </div>
+        <div class="col-lg-5 offset-lg-1">
+          <div class="card p-4 float" style="border-color:#2e2e34;position:relative;">
+            <div style="position:absolute;top:0;left:20px;right:20px;height:1px;background:var(--gold);opacity:.5;"></div>
+            <div style="font-size:.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);" class="mb-2"><i class="fas fa-envelope me-1"></i> Letter · Personal</div>
+            <div class="serif mb-2">Dear Future Me...</div>
+            <div class="mb-3" style="font-size:.82rem;color:var(--muted);filter:blur(3px);line-height:1.65;">I hope you've achieved everything you dreamed of. Remember how nervous you were before the exams?</div>
+            <div class="d-flex justify-content-between align-items-center pt-2" style="border-top:1px solid #2a2a32;">
+              <span class="badge-locked"><i class="fas fa-lock fa-xs me-1"></i>Locked</span>
+              <small style="color:var(--muted);">Opens Jan 1, 2027</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="py-5" style="position:relative;z-index:5;border-top:1px solid #2a2a32;">
+    <div class="container py-4">
+      <div class="row g-4">
+        {% for icon,title,desc in [('fa-lock','Time-Locked Capsules','Letters, memories, goals — sealed until the exact date you set.'),('fa-book-open','Stories Feed','Capsules auto-unlock on the feed like a letter arriving on time.'),('fa-paper-plane','Schedule Messages','Send messages that deliver exactly when you want. Images too.')] %}
+        <div class="col-md-4">
+          <div class="card p-4 h-100">
+            <div class="mb-3 d-flex align-items-center justify-content-center" style="width:40px;height:40px;background:rgba(200,169,110,.12);border-radius:9px;color:var(--gold);"><i class="fas {{ icon }}"></i></div>
+            <h5 class="serif mb-2">{{ title }}</h5>
+            <p style="font-size:.83rem;color:var(--muted);margin:0;">{{ desc }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+</main>
+<footer class="text-center py-4" style="border-top:1px solid #2a2a32;color:var(--muted);font-size:.8rem;position:relative;z-index:5;">
+  <div class="container">CapsuleConnect &mdash; Lock today. Discover tomorrow.</div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

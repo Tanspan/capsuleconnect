@@ -1,0 +1,31 @@
+{% extends 'base.html' %}{% block title %}— People{% endblock %}
+{% block content %}
+<section class="container py-5">
+  <div class="text-center mb-4"><h2 class="serif mb-1">Find People</h2><p style="color:var(--muted);font-size:.88rem;">Search by username to connect with others</p></div>
+  <form method="GET" action="{{ url_for('search') }}" class="mx-auto mb-4" style="max-width:520px;">
+    <div class="input-group">
+      <span class="input-group-text"><i class="fas fa-search"></i></span>
+      <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search username…" autofocus>
+      <button type="submit" class="btn btn-gold px-4">Search</button>
+    </div>
+  </form>
+  {% if q %}{% if users %}
+  <div class="row g-3" style="max-width:860px;margin:0 auto;">
+    {% for u in users %}
+    <div class="col-6 col-md-3"><div class="card text-center p-3">
+      <div class="av mx-auto mb-2" style="width:56px;height:56px;font-size:1.3rem;">{{ u.username[0].upper() }}</div>
+      <div class="serif mb-1" style="font-size:.95rem;">@{{ u.username }}</div>
+      <div class="mb-3" style="font-size:.72rem;color:var(--muted);">Since {{ u.created_at.strftime('%b %Y') }}</div>
+      <div class="d-flex justify-content-center gap-2 flex-wrap">
+        {% if u.cs=='accepted' %}<span class="btn btn-sm" style="background:rgba(112,196,154,.12);color:var(--unlock);border:1px solid rgba(112,196,154,.25);font-size:.72rem;">Connected</span>
+        {% elif u.cs=='pending' %}<span class="btn btn-sm btn-outline-secondary" style="font-size:.72rem;">Pending</span>
+        {% else %}<form method="POST" action="{{ url_for('connect',oid=u.id) }}" style="display:inline;"><button class="btn btn-sm btn-gold" style="font-size:.72rem;"><i class="fas fa-user-plus me-1"></i>Connect</button></form>{% endif %}
+        <a href="{{ url_for('profile',uname=u.username) }}" class="btn btn-sm btn-outline-secondary" style="font-size:.72rem;">View</a>
+      </div>
+    </div></div>
+    {% endfor %}
+  </div>
+  {% else %}<div class="text-center py-5" style="color:var(--muted);"><i class="fas fa-search fa-2x mb-3 d-block"></i><h5 class="serif">No results for "{{ q }}"</h5></div>{% endif %}
+  {% else %}<div class="text-center py-5" style="color:var(--muted);"><i class="fas fa-users fa-2x mb-3 d-block"></i><h5 class="serif">Search for people</h5><p style="font-size:.85rem;">Type a username above.</p></div>{% endif %}
+</section>
+{% endblock %}

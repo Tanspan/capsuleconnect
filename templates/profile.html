@@ -1,0 +1,50 @@
+{% extends 'base.html' %}{% block title %}— @{{ u.username }}{% endblock %}
+{% block content %}
+<section class="container py-5">
+  <div class="mb-3"><a href="{{ url_for('feed') }}" style="color:var(--muted);font-size:.85rem;"><i class="fas fa-arrow-left me-2"></i>Back</a></div>
+  <div class="card p-4 p-md-5 mb-4">
+    <div class="d-flex flex-wrap gap-4 align-items-start">
+      <div class="av" style="width:80px;height:80px;font-size:2rem;border:2px solid #2a2a32;">{{ u.username[0].upper() }}</div>
+      <div class="flex-grow-1">
+        <h3 class="serif mb-1">@{{ u.username }}</h3>
+        <p class="mb-3" style="color:var(--muted);font-size:.85rem;">{{ u.bio or 'No bio yet.' }}</p>
+        <div class="d-flex gap-4 flex-wrap">
+          {% for v,l in [(total,'Capsules'),(locked,'Locked'),(total-locked,'Unlocked'),(fc,'Friends')] %}
+          <div class="text-center"><div class="serif fw-bold" style="font-size:1.3rem;color:var(--gold);">{{ v }}</div><div style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:var(--muted);">{{ l }}</div></div>
+          {% endfor %}
+        </div>
+        {% if cs=='recv' and crow %}
+        <div class="d-flex gap-2 mt-3">
+          <form method="POST" action="{{ url_for('accept',cid=crow.id) }}" style="display:inline;"><button class="btn btn-sm" style="background:rgba(112,196,154,.15);color:var(--unlock);border:1px solid rgba(112,196,154,.3);">Accept</button></form>
+          <form method="POST" action="{{ url_for('reject',cid=crow.id) }}" style="display:inline;"><button class="btn btn-sm btn-outline-secondary">Decline</button></form>
+        </div>
+        {% endif %}
+      </div>
+      {% if not is_own %}
+      <div class="d-flex gap-2 flex-wrap">
+        {% if cs=='accepted' %}<span class="btn btn-sm" style="background:rgba(112,196,154,.12);color:var(--unlock);border:1px solid rgba(112,196,154,.25);">Connected</span><a href="{{ url_for('chat_with',oid=u.id) }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-comment me-1"></i>Message</a>
+        {% elif cs=='sent' %}<span class="btn btn-sm btn-outline-secondary">Request Sent</span>
+        {% elif cs!='recv' %}<form method="POST" action="{{ url_for('connect',oid=u.id) }}" style="display:inline;"><button class="btn btn-sm btn-gold"><i class="fas fa-user-plus me-1"></i>Connect</button></form>{% endif %}
+      </div>
+      {% else %}<a href="{{ url_for('create') }}" class="btn btn-gold btn-sm">+ New Capsule</a>{% endif %}
+    </div>
+  </div>
+
+  <p class="text-uppercase fw-bold mb-3" style="font-size:.7rem;letter-spacing:1px;color:var(--muted);">{{ 'My Capsules' if is_own else 'Public Capsules' }}</p>
+  {% if caps %}
+  <div class="row g-3">
+    {% for cap in caps %}{% set ul=cap.unlock_date<=now %}
+    <div class="col-md-4"><div class="card h-100 p-3">
+      <div class="d-flex align-items-center gap-2 mb-2"><span class="dot dot-{{ cap.type }}"></span><span style="font-size:.68rem;color:var(--muted);font-weight:600;text-transform:uppercase;">{{ cap.type }}</span></div>
+      <h6 class="serif mb-2">{{ cap.title }}</h6>
+      <p class="mb-3 {{ '' if ul else 'blur' }}" style="font-size:.82rem;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ cap.message[:100] }}</p>
+      <div class="d-flex justify-content-between align-items-center pt-2" style="border-top:1px solid #2a2a32;">
+        <div>{% if ul %}<span class="badge-unlocked">Unlocked</span>{% else %}<span class="badge-locked">Locked</span>{% endif %}<div style="font-size:.7rem;color:var(--muted);margin-top:2px;">{{ cap.unlock_date.strftime('%b %d, %Y') }}</div></div>
+        {% if ul %}<a href="{{ url_for('view',cid=cap.id) }}" style="font-size:.76rem;font-weight:700;color:var(--gold);">Open →</a>{% endif %}
+      </div>
+    </div></div>
+    {% endfor %}
+  </div>
+  {% else %}<div class="text-center py-5" style="color:var(--muted);"><i class="fas fa-box-open fa-2x mb-3 d-block"></i><h5 class="serif">No capsules yet</h5>{% if is_own %}<a href="{{ url_for('create') }}" class="btn btn-gold mt-3">Create one</a>{% endif %}</div>{% endif %}
+</section>
+{% endblock %}
